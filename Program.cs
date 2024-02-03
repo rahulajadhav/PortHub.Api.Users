@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PortHub.Api.Users.Data;
+using PortHub.Api.Users.Data.Models;
+using PortHub.Api.Users.Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +13,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<appDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
+builder.Services.AddTransient<IUserServices, UserServices>();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<appDbContext>().AddDefaultTokenProviders();
 builder.Services.AddSwaggerGen();
+
+
+
 
 var app = builder.Build();
 
@@ -22,6 +30,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Authentication & Authorization
+app.UseAuthentication();
 
 app.UseAuthorization();
 

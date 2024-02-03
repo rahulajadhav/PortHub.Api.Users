@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "c0Fuqw/LoIYKPKLwxPHftAW1wc8vm9EyyvBdzC3YN8s=",
+  "Source": "PortHub.Api.Users",
+  "BasePath": "_content/PortHub.Api.Users",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
