@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PortHub.Api.Users.Data;
 using PortHub.Api.Users.Data.Models;
-using PortHub.Api.Users.Data.Services;
+using PortHub.Api.Users.Interface;
+using PortHub.Api.Users.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<appDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DBConnection")));
 builder.Services.AddTransient<IUserServices, UserServices>();
+builder.Services.AddHttpClient("TokenGenetator", config =>
+{
+    config.BaseAddress = new Uri(builder.Configuration["Services:TokenAuthorization"]);
+
+});
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<appDbContext>().AddDefaultTokenProviders();
 builder.Services.AddSwaggerGen();
 

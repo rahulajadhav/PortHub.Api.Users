@@ -1,21 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using PortHub.Api.Users.Data;
-using PortHub.Api.Users.Data.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using PortHub.Api.Users.Data.Models.ViewModel;
-using PortHub.Api.Users.Data.Services;
+using PortHub.Api.Users.Interface;
 
 namespace PortHub.Api.Users.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthenticationController : ControllerBase
+    public class UserController : ControllerBase
     {
         private IUserServices _userServices;
+   
 
-
-        public AuthenticationController(IUserServices service)
+        public UserController(IUserServices service)
         {
             _userServices = service;
 

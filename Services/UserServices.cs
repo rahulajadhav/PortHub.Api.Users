@@ -1,27 +1,34 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using PortHub.Api.Users.Data;
 using PortHub.Api.Users.Data.Models;
 using PortHub.Api.Users.Data.Models.ViewModel;
+using PortHub.Api.Users.Data.Models.viewModels;
+using PortHub.Api.Users.Interface;
 
-namespace PortHub.Api.Users.Data.Services
+namespace PortHub.Api.Users.Services
 {
     public class UserServices : IUserServices
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly appDbContext _appDbContext;
         private readonly RoleManager<IdentityRole> _roleManager;
-        
-        
+        private IHttpClientFactory _httpClientFactory;
+
 
         public UserServices(UserManager<ApplicationUser> userManager,
                 appDbContext appDbContext,
-                RoleManager<IdentityRole> roleManager
+                RoleManager<IdentityRole> roleManager,
+                IHttpClientFactory httpClientFactory
                 )
-            {
-                _userManager = userManager;
-                _appDbContext = appDbContext;
-                _roleManager = roleManager;  
-            }
+        {
+            _userManager = userManager;
+            _appDbContext = appDbContext;
+            _roleManager = roleManager;
+            _httpClientFactory = httpClientFactory;
+        }
         public async Task<IActionResult> CreateUserAsync(RegisterVM newUsers)
         {
 
@@ -65,50 +72,41 @@ namespace PortHub.Api.Users.Data.Services
         public async Task<IActionResult> LoginUserAsync(LoginVM newLogin)
         {
             var userExists = await _userManager.FindByNameAsync(newLogin.username);
-            if (userExists != null && await _userManager.CheckPasswordAsync(userExists, newLogin.password)) 
+            string relativeUri = $"/api/Token/refresh-login-user/";
+            if (userExists != null && await _userManager.CheckPasswordAsync(userExists, newLogin.password))
             {
-              return new OkObjectResult(userExists);
+
+                var jsonContent = new StringContent(JsonSerializer.Serialize(userExists), Encoding.UTF8, "application/json");
+                var client = _httpClientFactory.CreateClient("TokenGenetator");
+                var response = await client.PostAsync(relativeUri, jsonContent);
+                if (response.IsSuccessStatusCode)
+                {
+                    var rescontent = await response.Content.ReadAsByteArrayAsync();
+                    var option = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+                    var result = JsonSerializer.Deserialize<AuthVM>(rescontent, option);
+                    return new OkObjectResult(result);
+
+                }
+                else
+                {
+                    return null;
+                }
 
             }
-            else { 
-            return null;
+            else
+            {
+                return null;
             }
         }
 
-        
+
 
         public Task<ApplicationUser> UpdateUserAsync(ApplicationUser newUser)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IActionResult> RefreshTokenVM()
-        {
-            // var result = VerifyAndGenerateTokenAsync(VerifyToken);
-            // return new OkObjectResult(result);
-            throw new NotImplementedException();
-        }
+      
 
-        /*private async Task<AuthVM> VerifyAndGenerateTokenAsync(RefreshTokenVM verifyToken)
-        {
-            var jwtTokenHandler = new JwtSecurityTokenHandler();
-            var storedToken = await _appDbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == verifyToken.RefreshToken);
-            var dbUser = await _userManager.FindByIdAsync(storedToken.UserId);
-            try
-            {
-                var tokenCheckResult = jwtTokenHandler.ValidateToken(verifyToken.Token, _tokenValidationParameters, out var validatedToken);
-                return await GenerateJWTTokenAsync(dbUser, storedToken);
-
-            }
-            catch(SecurityTokenExpiredException) {
-                if (storedToken.DateExpire >= DateTime.UtcNow)
-                {
-                   return await GenerateJWTTokenAsync(dbUser, storedToken);
-                }
-                else {
-                    return await GenerateJWTTokenAsync(dbUser, null); ;
-                }
-            }
-        }*/
     }
 }

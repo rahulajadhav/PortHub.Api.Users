@@ -2,11 +2,11 @@
 using PortHub.Api.Users.Data.Models;
 using PortHub.Api.Users.Data.Models.ViewModel;
 
-namespace PortHub.Api.Users.Data.Services
+namespace PortHub.Api.Users.Interface
 {
     public interface IUserServices
     {
-        public Task<IActionResult> RefreshTokenVM();
+        
         public Task<ApplicationUser> GetUserByEmailIdAsync(string emailId);
         public Task<IEnumerable<ApplicationUser>> GetAllUserAsync();
         public Task<IActionResult> CreateUserAsync(RegisterVM newUsers);
